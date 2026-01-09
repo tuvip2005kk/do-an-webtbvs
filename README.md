@@ -1,4 +1,4 @@
-# Sanitary Store - E-commerce Project
+# ĐỒ ÁN
 
 Dự án website bán thiết bị vệ sinh cao cấp.
 

@@ -1,10 +1,18 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
-// TODO: Thêm các model ở đây
+model User {
+    id        Int      @id @default(autoincrement())
+    email     String   @unique
+    password  String
+    name      String?
+    role      String   @default("USER")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
