@@ -1,0 +1,112 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
+import { Product } from '@prisma/client';
+
+@Injectable()
+export class ProductsService {
+    constructor(private prisma: PrismaService) { }
+
+    async findAll(search?: string, category?: string, sort?: string, subcategoryId?: number): Promise<any[]> {
+        const where: any = {};
+
+        if (search) {
+            where.OR = [
+                { name: { contains: search } },
+                { description: { contains: search } },
+            ];
+        }
+
+        if (subcategoryId) {
+            where.subcategoryId = subcategoryId;
+        }
+
+        const orderBy: any = {};
+        if (sort === 'sold') {
+            orderBy.soldCount = 'desc';
+        } else {
+            orderBy.createdAt = 'desc';
+        }
+
+        return this.prisma.product.findMany({
+            where,
+            orderBy,
+            include: {
+                subcategory: {
+                    include: {
+                        category: true
+                    }
+                }
+            }
+        });
+    }
+
+    async findOne(id: number): Promise<any | null> {
+        return this.prisma.product.findUnique({
+            where: { id },
+            include: {
+                subcategory: {
+                    include: {
+                        category: true
+                    }
+                }
+            }
+        });
+    }
+
+    async findBySlug(slug: string): Promise<any | null> {
+        return this.prisma.product.findUnique({
+            where: { slug },
+            include: {
+                subcategory: {
+                    include: {
+                        category: true
+                    }
+                },
+                reviews: {
+                    include: {
+                        user: { select: { name: true } }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
+        });
+    }
+
+    async create(data: { name: string; slug: string; description: string; price: number; image: string; images?: string[]; subcategoryId?: number; stock: number; specs?: any }): Promise<Product> {
+        return this.prisma.product.create({
+            data,
+        });
+    }
+
+    async update(id: number, data: { name?: string; slug?: string; description?: string; price?: number; image?: string; images?: string[]; subcategoryId?: number; stock?: number; specs?: any }): Promise<Product> {
+        return this.prisma.product.update({
+            where: { id },
+            data,
+        });
+    }
+
+    async delete(id: number): Promise<Product> {
+        // Delete all related records first to avoid foreign key constraints
+        await this.prisma.$transaction([
+            // Delete likes for this product
+            this.prisma.like.deleteMany({
+                where: { productId: id }
+            }),
+            // Delete reviews for this product
+            this.prisma.review.deleteMany({
+                where: { productId: id }
+            }),
+            // Delete order items for this product
+            this.prisma.orderItem.deleteMany({
+                where: { productId: id }
+            })
+        ]);
+
+        // Now delete the product
+        return this.prisma.product.delete({
+            where: { id },
+        });
+    }
+}
