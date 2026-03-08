@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, LogIn, LayoutDashboard, CircleUserRound } from "lucide-react";
+import { LogOut, User, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 
@@ -42,7 +42,9 @@ export function UserMenu() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-                <CircleUserRound className="h-6 w-6 text-white" />
+                <div className="w-9 h-9 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
+                    {user.name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                </div>
             </button>
 
             {isOpen && (
@@ -61,16 +63,6 @@ export function UserMenu() {
                         <User className="h-4 w-4" />
                         Tài khoản của tôi
                     </Link>
-                    {user.role === 'ADMIN' && (
-                        <Link
-                            href="/admin"
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#21246b] font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                            onClick={() => setIsOpen(false)}
-                        >
-                            <LayoutDashboard className="h-4 w-4" />
-                            Quản trị hệ thống
-                        </Link>
-                    )}
                     <button
                         onClick={() => {
                             logout();
